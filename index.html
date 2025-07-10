@@ -10,8 +10,12 @@
 </head>
 <body>
     <h1>NFT Duel Game</h1>
-    <button onclick="startDuel()">Начать дуэль</button>
-    <button onclick="startRPS()">Камень-Ножницы-Бумага</button>
+    <button onclick="startGame('start_duel')">Начать дуэль</button>
+    <button onclick="startGame('start_rps')">Камень-Ножницы-Бумага</button>
+    <button onclick="startGame('start_hot_potato')">Горячая Картошка</button>
+    <button onclick="startGame('start_dice')">Кости</button>
+    <button onclick="startGame('start_slots')">Слоты</button>
+    <button onclick="startGame('start_wheel')">Колесо Фортуны</button>
     <script>
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
@@ -19,16 +23,9 @@
         const user = Telegram.WebApp.initDataUnsafe.user;
         const userId = user ? user.id : null;
 
-        function startDuel() {
+        function startGame(action) {
             if (userId) {
-                Telegram.WebApp.sendData(JSON.stringify({ action: "start_duel", user_id: userId }));
-                Telegram.WebApp.close();
-            }
-        }
-
-        function startRPS() {
-            if (userId) {
-                Telegram.WebApp.sendData(JSON.stringify({ action: "start_rps", user_id: userId }));
+                Telegram.WebApp.sendData(JSON.stringify({ action: action, user_id: userId }));
                 Telegram.WebApp.close();
             }
         }
