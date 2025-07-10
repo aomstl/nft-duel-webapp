@@ -4,40 +4,33 @@
     <title>NFT Duel Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; }
     </style>
 </head>
 <body>
     <h1>NFT Duel Game</h1>
-    <p>Добро пожаловать в дуэль! Нажми, чтобы начать.</p>
     <button onclick="startDuel()">Начать дуэль</button>
+    <button onclick="startRPS()">Камень-Ножницы-Бумага</button>
     <script>
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
+
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        const userId = user ? user.id : null;
+
         function startDuel() {
-            Telegram.WebApp.sendData(JSON.stringify({ action: "start_duel" }));
-            alert("Дуэль началась! Ожидай соперника.");
+            if (userId) {
+                Telegram.WebApp.sendData(JSON.stringify({ action: "start_duel", user_id: userId }));
+                Telegram.WebApp.close();
+            }
+        }
+
+        function startRPS() {
+            if (userId) {
+                Telegram.WebApp.sendData(JSON.stringify({ action: "start_rps", user_id: userId }));
+                Telegram.WebApp.close();
+            }
         }
     </script>
 </body>
