@@ -1,40 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Casino WebApp</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Duel Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+        }
+        .button {
+            flex: 1 1 calc(50% - 15px);
+            padding: 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+            min-width: 120px;
+            box-sizing: border-box;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button:active {
+            background-color: #1f6fa3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+            min-height: 20px;
+        }
+        @media (max-width: 400px) {
+            .button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <main>
-    <!-- Верхний бар -->
-    <header>
-      <div class="logo">🎰 Casino</div>
-      <div class="balance">💎 12.5 TON</div>
-    </header>
+    <h1>NFT Duel Arena</h1>
+    <div class="menu">
+        <button class="button" onclick="startGame('start_duel')">Начать дуэль</button>
+        <button class="button" onclick="startGame('start_rps')">Камень-Ножницы-Бумага</button>
+        <button class="button" onclick="startGame('start_hot_potato')">Горячая Картошка</button>
+        <button class="button" onclick="startGame('start_dice')">Кости</button>
+        <button class="button" onclick="startGame('start_slots')">Слоты</button>
+        <button class="button" onclick="startGame('start_wheel')">Колесо Фортуны</button>
+    </div>
+    <div id="result"></div>
 
-    <!-- Игровая зона -->
-    <section class="wheel-section">
-      <div class="wheel-container">
-        <div id="wheel" class="wheel"></div>
-      </div>
-      <button id="spinBtn" class="btn primary">Поставить NFT и крутить</button>
-      <div class="timer">00:30</div>
-    </section>
+    <script>
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
 
-    <!-- Нижнее меню -->
-    <nav class="bottom-nav">
-      <button class="nav-btn active">🎲 Rolls</button>
-      <button class="nav-btn">🎁 Мои гифты</button>
-      <button class="nav-btn">🛒 Магазин</button>
-      <button class="nav-btn">💰 Заработок</button>
-    </nav>
-  </main>
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        const userId = user ? user.id : null;
+        const resultDiv = document.getElementById('result');
 
-  <!-- TON Connect -->
-  <button id="tonConnectBtn" class="btn secondary ton-btn">TON Connect</button>
-
-  <script src="app.js"></script>
+        function startGame(action) {
+            if (userId) {
+                resultDiv.innerText = `Отправлено действие: ${action} для пользователя ${userId}. Ожидайте ответа от бота...`;
+                Telegram.WebApp.sendData(JSON.stringify({ action: action, user_id: userId }));
+                setTimeout(() => Telegram.WebApp.close(), 500); // Закрываем после небольшой задержки
+            } else {
+                resultDiv.innerText = "Ошибка: не удалось получить ID пользователя.";
+            }
+        }
+    </script>
 </body>
 </html>
