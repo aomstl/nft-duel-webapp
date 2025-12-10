@@ -1,3 +1,18 @@
+const POMO_SECONDS = 25 * 60;
+let remaining = POMO_SECONDS;
+let intervalId = null;
+let isRunning = false;
+
+const timerDisplay = document.getElementById("timerDisplay");
+const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resetBtn = document.getElementById("resetBtn");
+const statusText = document.getElementById("statusText");
+
+// берём habit_id из URL: ...?habit_id=1
+const urlParams = new URLSearchParams(window.location.search);
+const habitId = urlParams.get("habit_id") || null;
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -164,45 +179,3 @@
 </body>
 </html>
 
-const POMO_SECONDS = 25 * 60;
-let remaining = POMO_SECONDS;
-let intervalId = null;
-let isRunning = false;
-
-const timerDisplay = document.getElementById("timerDisplay");
-const startBtn = document.getElementById("startBtn");
-const pauseBtn = document.getElementById("pauseBtn");
-const resetBtn = document.getElementById("resetBtn");
-const statusText = document.getElementById("statusText");
-
-const urlParams = new URLSearchParams(window.location.search);
-const habitId = urlParams.get("habit_id") || null;
-
-function formatTime(sec) { ... }      // как было
-function updateDisplay() { ... }      // как было
-
-function sendFinishToBot() {
-  if (!window.Telegram || !window.Telegram.WebApp) return;
-  const payload = {
-    type: "pomodoro_finished",
-    habit_id: habitId,
-    duration_sec: POMO_SECONDS,
-    finished_at: new Date().toISOString()
-  };
-  Telegram.WebApp.sendData(JSON.stringify(payload));
-  Telegram.WebApp.close();
-}
-
-function tick() {
-  if (!isRunning) return;
-  if (remaining <= 0) {
-    clearInterval(intervalId);
-    intervalId = null;
-    isRunning = false;
-    statusText.textContent = "Сессия завершена 🎉";
-    sendFinishToBot();    // вот здесь
-    return;
-  }
-  remaining -= 1;
-  updateDisplay();
-}
