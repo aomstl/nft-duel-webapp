@@ -1,236 +1,165 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script>```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFT Gaming Hub</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a2a3d, #2a4055);
-            color: #e0e7f0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-        header {
-            padding: 15px;
-            text-align: center;
-            font-size: 1.5em;
-            font-weight: 600;
-            background: linear-gradient(90deg, #2a4055, #1a2a3d);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        header span {
-            margin: 0 5px;
-        }
-        header .icon {
-            font-size: 0.8em;
-            color: #ffcc5c;
-        }
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            animation: float 3s ease-in-out infinite;
-        }
-        .wheel {
-            width: 100%;
-            height: 100%;
-            background: conic-gradient(#4a90e2, #50c9c3, #8e44ad, #e67e22, #4a90e2);
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
-            transition: transform 0.5s ease;
-        }
-        .wheel-segment {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            clip-path: polygon(50% 0%, 70% 20%, 50% 50%, 30% 20%);
-            transform-origin: center;
-            transform: rotate(0deg);
-        }
-        .wheel-segment::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #ffcc5c;
-            border-radius: 50%;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 10px #ffcc5c;
-        }
-        .spin-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, #e67e22, #f1c40f);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.2em;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.5), inset 0 0 10px #fff;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .spin-button:hover {
-            transform: translate(-50%, -50%) scale(1.1);
-            box-shadow: 0 8px 20px rgba(230, 126, 34, 0.7), inset 0 0 15px #fff;
-        }
-        .spin-button:active {
-            transform: translate(-50%, -50%) scale(0.95);
-        }
-        .nav-bar {
-            display: flex;
-            justify-content: space-around;
-            background: #1a2a3d;
-            padding: 10px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-        .nav-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #e0e7f0;
-            text-decoration: none;
-            font-size: 0.9em;
-            padding: 5px;
-            border-radius: 15px;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-        .nav-button:hover {
-            color: #50c9c3;
-            transform: scale(1.1);
-            text-shadow: 0 0 10px #50c9c3;
-        }
-        .nav-button span {
-            margin-top: 2px;
-        }
-        .connect-wallet {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: linear-gradient(90deg, #8e44ad, #4a90e2);
-            border: none;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .connect-wallet:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px #8e44ad;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        @media (max-width: 480px) {
-            .wheel-container { width: 250px; height: 250px; }
-            .spin-button { width: 70px; height: 70px; font-size: 1em; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Pomodoro Timer</title>
+  <!-- Скрипт Telegram Mini Apps -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      background: #1f2937;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      width: 320px;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+    .timer {
+      font-size: 48px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-secondary {
+      background: #374151;
+      color: #e5e7eb;
+    }
+    .status {
+      font-size: 12px;
+      color: #9ca3af;
+      min-height: 16px;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        Last Wins <span class="icon">🎁</span> <span class="icon">🍬</span> <span class="icon">⭐</span>
-    </header>
-    <div class="main-content">
-        <div class="wheel-container">
-            <div class="wheel">
-                <div class="wheel-segment"></div>
-                <div class="wheel-segment" style="transform: rotate(60deg);"></div>
-                <div class="wheel-segment" style="transform: rotate(120deg);"></div>
-                <div class="wheel-segment" style="transform: rotate(180deg);"></div>
-                <div class="wheel-segment" style="transform: rotate(240deg);"></div>
-                <div class="wheel-segment" style="transform: rotate(300deg);"></div>
-            </div>
-            <button class="spin-button" onclick="spinWheel()">Spin</button>
-        </div>
-        <button class="connect-wallet">Connect Wallet</button>
-    </div>
-    <div class="nav-bar">
-        <a href="#games" class="nav-button"><span>🎮</span><span>Games</span></a>
-        <a href="#shop" class="nav-button"><span>🛒</span><span>Shop</span></a>
-        <a href="#profile" class="nav-button"><span>👤</span><span>Profile</span></a>
+  <div class="container">
+    <h1>Pomodoro</h1>
+    <div class="subtitle">25 минут фокуса, потом перерыв</div>
+
+    <div class="timer" id="timerDisplay">25:00</div>
+
+    <div class="buttons">
+      <button class="btn-primary" id="startBtn">Старт</button>
+      <button class="btn-secondary" id="pauseBtn">Пауза</button>
+      <button class="btn-secondary" id="resetBtn">Сброс</button>
     </div>
 
-    <script>
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
+    <div class="status" id="statusText"></div>
+  </div>
 
-        function spinWheel() {
-            const wheel = document.querySelector('.wheel');
-            const randomDegrees = 720 + Math.floor(Math.random() * 360);
-            wheel.style.transition = 'transform 4s ease-out';
-            wheel.style.transform = `rotate(${randomDegrees}deg)`;
-            setTimeout(() => {
-                alert('Spin completed! Check your rewards.');
-                wheel.style.transition = 'none';
-                wheel.style.transform = 'rotate(0deg)';
-            }, 4000);
-        }
-    </script>
+  <script>
+    const POMO_SECONDS = 25 * 60;
+    let remaining = POMO_SECONDS;
+    let intervalId = null;
+    let isRunning = false;
+
+    const timerDisplay = document.getElementById("timerDisplay");
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusText = document.getElementById("statusText");
+
+    // habit_id можно будет передавать через параметр в URL или initData
+    const urlParams = new URLSearchParams(window.location.search);
+    const habitId = urlParams.get("habit_id") || null;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(remaining);
+    }
+
+    function sendFinishToBot() {
+      if (!window.Telegram || !window.Telegram.WebApp) return;
+      const payload = {
+        type: "pomodoro_finished",
+        habit_id: habitId,
+        duration_sec: POMO_SECONDS,
+        finished_at: new Date().toISOString()
+      };
+      Telegram.WebApp.sendData(JSON.stringify(payload));
+      Telegram.WebApp.close(); // сворачиваем мини‑приложение
+    }
+
+    function tick() {
+      if (!isRunning) return;
+      if (remaining <= 0) {
+        clearInterval(intervalId);
+        intervalId = null;
+        isRunning = false;
+        statusText.textContent = "Сессия завершена 🎉";
+        sendFinishToBot();
+        return;
+      }
+      remaining -= 1;
+      updateDisplay();
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (isRunning) return;
+      isRunning = true;
+      statusText.textContent = "Идёт фокус‑сессия…";
+      if (!intervalId) {
+        intervalId = setInterval(tick, 1000);
+      }
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      if (!isRunning) return;
+      isRunning = false;
+      statusText.textContent = "Пауза";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      isRunning = false;
+      clearInterval(intervalId);
+      intervalId = null;
+      remaining = POMO_SECONDS;
+      updateDisplay();
+      statusText.textContent = "";
+    });
+
+    updateDisplay();
+  </script>
 </body>
 </html>
-```
