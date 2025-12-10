@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Pomodoro Timer</title>
   <!-- Скрипт Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -22,7 +23,7 @@
       border-radius: 16px;
       background: #1f2937;
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      width: 320px;
+      width: 420;
     }
     h1 {
       margin-top: 0;
@@ -35,7 +36,7 @@
       margin-bottom: 20px;
     }
     .timer {
-      font-size: 48px;
+      font-size: 64;
       font-weight: 600;
       margin-bottom: 20px;
     }
@@ -51,7 +52,7 @@
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 16px;
     }
     .btn-primary {
       background: #ef4444;
@@ -94,7 +95,6 @@
     if (window.Telegram && window.Telegram.WebApp) {
   Telegram.WebApp.expand();
 }
-
     // длительность текущей сессии в секундах
     let pomoSeconds = 25 * 60;
     let remaining = pomoSeconds;
