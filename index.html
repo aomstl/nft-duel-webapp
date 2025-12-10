@@ -44,6 +44,7 @@
       gap: 8px;
       justify-content: center;
       margin-bottom: 12px;
+      flex-wrap: wrap;
     }
     button {
       padding: 8px 14px;
@@ -70,9 +71,15 @@
 <body>
   <div class="container">
     <h1>Pomodoro</h1>
-    <div class="subtitle">25 минут фокуса, потом перерыв</div>
+    <div class="subtitle">Выбери длительность и запускай фокус</div>
 
     <div class="timer" id="timerDisplay">25:00</div>
+
+    <div class="buttons">
+      <button class="btn-secondary" id="btn25">25 мин</button>
+      <button class="btn-secondary" id="btn15">15 мин</button>
+      <button class="btn-secondary" id="btnCustom">Свое</button>
+    </div>
 
     <div class="buttons">
       <button class="btn-primary" id="startBtn">Старт</button>
@@ -84,8 +91,9 @@
   </div>
 
   <script>
-    const POMO_SECONDS = 5;
-    let remaining = POMO_SECONDS;
+    // длительность текущей сессии в секундах
+    let pomoSeconds = 25 * 60;
+    let remaining = pomoSeconds;
     let intervalId = null;
     let isRunning = false;
 
@@ -95,7 +103,11 @@
     const resetBtn = document.getElementById("resetBtn");
     const statusText = document.getElementById("statusText");
 
-    // берём habit_id из URL: ...?habit_id=1
+    const btn25 = document.getElementById("btn25");
+    const btn15 = document.getElementById("btn15");
+    const btnCustom = document.getElementById("btnCustom");
+
+    // habit_id берём из URL: ...?habit_id=1
     const urlParams = new URLSearchParams(window.location.search);
     const habitId = urlParams.get("habit_id") || null;
 
@@ -109,12 +121,20 @@
       timerDisplay.textContent = formatTime(remaining);
     }
 
+    function setDuration(mins) {
+      if (isRunning) return; // не даём менять во время сессии
+      pomoSeconds = mins * 60;
+      remaining = pomoSeconds;
+      updateDisplay();
+      statusText.textContent = `Длительность: ${mins} мин`;
+    }
+
     function sendFinishToBot() {
       if (!window.Telegram || !window.Telegram.WebApp) return;
       const payload = {
         type: "pomodoro_finished",
         habit_id: habitId,
-        duration_sec: POMO_SECONDS,
+        duration_sec: pomoSeconds,
         finished_at: new Date().toISOString()
       };
       Telegram.WebApp.sendData(JSON.stringify(payload));
@@ -135,6 +155,19 @@
       updateDisplay();
     }
 
+    // выбор длительности
+    btn25.addEventListener("click", () => setDuration(25));
+    btn15.addEventListener("click", () => setDuration(15));
+    btnCustom.addEventListener("click", () => {
+      if (isRunning) return;
+      const val = prompt("Сколько минут фокуса?", "30");
+      const mins = parseInt(val, 10);
+      if (!isNaN(mins) && mins > 0 && mins <= 240) {
+        setDuration(mins);
+      }
+    });
+
+    // управление таймером
     startBtn.addEventListener("click", () => {
       if (isRunning) return;
       isRunning = true;
@@ -154,11 +187,12 @@
       isRunning = false;
       clearInterval(intervalId);
       intervalId = null;
-      remaining = POMO_SECONDS;
+      remaining = pomoSeconds;
       updateDisplay();
       statusText.textContent = "";
     });
 
+    // начальное значение
     updateDisplay();
   </script>
 </body>
