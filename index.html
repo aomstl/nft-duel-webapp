@@ -134,16 +134,20 @@
     }
 
     function sendFinishToBot() {
-      if (!window.Telegram || !window.Telegram.WebApp) return;
-      const payload = {
-        type: "pomodoro_finished",
-        habit_id: habitId,
-        duration_sec: pomoSeconds,
-        finished_at: new Date().toISOString()
-      };
-      Telegram.WebApp.sendData(JSON.stringify(payload));
-      Telegram.WebApp.close();
+    alert("FINISH");  // временно, чтобы точно увидеть вызов
+  
+    if (!window.Telegram || !window.Telegram.WebApp) return;
+    const payload = {
+      type: "pomodoro_finished",
+      habit_id: habitId,
+      duration_sec: pomoSeconds,
+      finished_at: new Date().toISOString()
+    };
+    Telegram.WebApp.sendData(JSON.stringify(payload));
+    // временно закомментируй автозакрытие, чтобы видеть alert:
+    // Telegram.WebApp.close();
     }
+
 
     function tick() {
       if (!isRunning) return;
